@@ -1,23 +1,25 @@
 # EASY K8S LOCAL
-Scripts para facilitar a o uso do Kubernetes localmente na maquina.
+O objetivo desse repositório é orientar de forma facil como utilizar o Kubernetes localmente.   
+Usaremos as ferramentas: [KinD](https://kind.sigs.k8s.io), [Docker](https://www.docker.com) e [Kubectl](https://kubernetes.io/docs/reference/kubectl/) para montarmos um cluster funcional e leve.
 
 ## Dependencias
 
 - Docker
-- Kubectl
 - KIND
 - Cloud Provider KIND
+- Kubectl
 
-> Para instalação do Docker, é necessario seguir os passos [oficiais](https://docs.docker.com/engine/install/). Os demais, eu recomendo instalar via [Brew](https://brew.sh/) (`brew install kind kubectl cloud-provider-kind`).
+> Para instalação do `Docker`, é necessario seguir os passos [oficiais](https://docs.docker.com/engine/install/). Os demais, eu recomendo instalar via [Brew](https://brew.sh/) (`brew install kind cloud-provider-kind kubectl`).
 
-## Inicialização Do Cluster
+## Inicialização do Cluster
 
-### 1. Passo - Iniciar o Cluster junto com o Registry
+### 1. Passo - Iniciar o Cluster junto com o Local Registry
 ```sh
 ./script/kind-with-registry.sh
 ```
 > Script não prende o terminal.
 
+**Local Registry** é o servidor/repositório local de imagens `Docker`. Ele é necessario quando se faz a construção (`build`) de uma nova imagem e precisa utilizar a mesma no manifesto de `deployment`, pois ele só utiliza imagens previamente armazenadas em um repositório.
 
 ### 2. Passo - Iniciar o Load Balancer
 Liberar as permissões requeridas:
