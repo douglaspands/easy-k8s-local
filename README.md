@@ -34,6 +34,13 @@ cloud-provider-kind
 ```
 > Binario prende o terminal.
 
+### !!! Script facilitador !!!
+Foi criado em Python um script para facilitar a inicialização do cluster:
+```sh
+./easyk8s
+```
+Pressione `Ctrl+C` para cancelar o script e encerrar o load balancer, o cluster e o registry.
+
 ## Teste
 Apos iniciar o cluster do k8s, iniciar a aplicação de teste com o seguinte comando:
 ```sh
