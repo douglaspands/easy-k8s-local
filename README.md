@@ -1,15 +1,19 @@
 # EASY K8S LOCAL
 O objetivo desse repositório é orientar de forma facil como utilizar o Kubernetes localmente.   
-Usaremos as ferramentas: [KinD](https://kind.sigs.k8s.io), [Docker](https://www.docker.com) e [Kubectl](https://kubernetes.io/docs/reference/kubectl/) para montarmos um cluster funcional e leve.
+Usaremos as ferramentas: **Docker**, **KinD** e **Kubectl** para montarmos um cluster funcional e leve.
 
-## Dependencias
+## Dependências
 
-- Docker
-- KIND
-- Cloud Provider KIND
-- Kubectl
+- [Docker](https://www.docker.com)
+- [KinD](https://kind.sigs.k8s.io)
+- [Kubernetes Cloud Provider for KinD](https://github.com/kubernetes-sigs/cloud-provider-kind)
+- [Kubectl](https://kubernetes.io/docs/reference/kubectl/)
 
-> Para instalação do `Docker`, é necessario seguir os passos [oficiais](https://docs.docker.com/engine/install/). Os demais, eu recomendo instalar via [Brew](https://brew.sh/) (`brew install kind cloud-provider-kind kubectl`).
+Para instalação do `Docker`, é necessario seguir os passos [oficiais](https://docs.docker.com/engine/install/).   
+Os demais, eu recomendo instalar via [Brew](https://brew.sh/) com o comando: 
+```sh
+brew install kind cloud-provider-kind kubectl
+```
 
 ## Inicialização do Cluster
 
