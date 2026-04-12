@@ -86,7 +86,7 @@ Pressione `Ctrl+C` para cancelar o script e encerrar o load balancer, o cluster 
 
 **Local Registry** é o servidor/repositório local de imagens `Docker`. Ele é necessario quando se faz a construção (`build`) de uma nova imagem e precisa utilizar a mesma no manifesto de `deployment`, pois ele só utiliza imagens previamente armazenadas em um repositório.
 
-Todas as imagens Docker precisarão iniciar o local do registry.
+Todas as imagens Docker precisarão iniciar com o endereço do local do registry.
 Vou dar um exemplo:
 ```yaml
 services:
