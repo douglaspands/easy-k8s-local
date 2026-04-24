@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # get the Ingress IP
 INGRESS_IP=$(kubectl get ingress foo-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 

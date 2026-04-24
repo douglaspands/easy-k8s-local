@@ -2,15 +2,17 @@
 O objetivo desse repositório é orientar de forma facil como utilizar o Kubernetes localmente.   
 Usaremos as ferramentas: **Docker**, **KinD** e **Kubectl** para montarmos um cluster funcional e leve.
 
+**Funciona apenas nos sistemas Linux/WSL2 e MacOS**
+
 ## Dependências
 
-- [Docker](https://www.docker.com)
+- [Docker](https://www.docker.com) / [Podman](https://podman.io/)
 - [KinD](https://kind.sigs.k8s.io)
 - [Kubernetes Cloud Provider for KinD](https://github.com/kubernetes-sigs/cloud-provider-kind)
 - [Kubectl](https://kubernetes.io/docs/reference/kubectl/)
 
-Para instalação do `Docker`, é necessario seguir os passos [oficiais](https://docs.docker.com/engine/install/).   
-Os demais, eu recomendo instalar via [Brew](https://brew.sh/) com o comando: 
+Voce pode optar por usar o [Docker](https://www.docker.com) ou [Podman](https://podman.io/) (o script de automação vai checar quem esta instalado nessa ordem), recomendo olhar nos respectivos sites para obter informações mais adequedas para a instalação.   
+As demais dependencias, eu recomendo instalar via [Brew](https://brew.sh/) com o comando: 
 ```sh
 brew install kind cloud-provider-kind kubectl
 ```
@@ -77,6 +79,7 @@ Pressione `Ctrl+C` para cancelar o script e encerrar o load balancer, o cluster 
 
 > Caso queira saber o procedimento manual, seguir os passos abaixo.
 
+> Usando o `Podman`, o `registry-local` só funcion corretamente se [desativar a conexão segura (HTTPS)](#podman--localregistry-desativar-conexão-segura).
 
 ### 1. Passo - Iniciar o Cluster junto com o Local Registry
 ```sh
@@ -103,9 +106,11 @@ services:
       - TZ=America/Sao_Paulo
 ```
 
-No `docker-compose` acima, o repositorio é o host do servidor `localhost:5001` mais o repositorio `minha-aplicacao`.
+No `docker-compose` acima, o repositorio é o host do servidor `localhost:5001` mais o repositorio `minha-aplicacao` e a tag `latest`.
 
 Após o build, é necessario fazer o `push` para que a imagem seja registrada no servidor de registry e consequentemente o Kubernetes conseguir puxar ao iniciar a aplicação.
+
+> Usando o `Podman`, o `registry-local` só funcion corretamente se [desativar a conexão segura (HTTPS)](#podman--localregistry-desativar-conexão-segura).
 
 ### 2. Passo - Iniciar o Load Balancer
 Liberar as permissões requeridas:
@@ -157,4 +162,14 @@ x-envoy-upstream-service-time: 0
 server: envoy
 
 bar-app
+```
+
+## Extras
+
+### Podman + LocalRegistry: Desativar conexão segura HTTPS
+Criar/Editar o arquivo de configuração `~/.config/containers/registries.conf` adicionado as seguintes informações:
+```sh
+[[registry]]
+location = "localhost:5001"
+insecure = true
 ```
