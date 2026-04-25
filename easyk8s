@@ -1,15 +1,28 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
 import subprocess
-from pathlib import Path
-from functools import cache
 import sys
+from functools import cache
+from pathlib import Path
 
 
 @cache
-def linux_in_wsl2() -> bool:
+def is_linux_native() -> bool:
     res = shell("uname -a", capture_output=True)
-    return "MICROSOFT" in res.stdout.upper()
+    if "LINUX" in str(sys.platform).upper():
+        if "MICROSOFT" in res.stdout.upper():
+            return False
+        return True
+    return False
+
+
+@cache
+def get_container_runtime() -> str:
+    if shell("which docker", capture_output=True).returncode == 0:
+        return "docker"
+    elif shell("which podman", capture_output=True).returncode == 0:
+        return "podman"
+    raise Exception("No container runtime found! Please install Docker or Podman.")
 
 
 def shell(cmd: str, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
@@ -26,12 +39,14 @@ def startup():
         Path(__file__).joinpath("..", "script", "kind-with-registry.sh").resolve()
     )
     shell(cmd)
-
-    print("\n>> Starting LoadBalancer...")
+    print(f"\n>> Starting LoadBalancer... {'' if is_linux_native() else '(#)'}")
     cmd = "kubectl label node kind-control-plane node.kubernetes.io/exclude-from-external-load-balancers-"
     shell(cmd)
     res = shell("which cloud-provider-kind", capture_output=True)
-    cmd = ("sudo " if linux_in_wsl2() else "") + res.stdout.strip()
+    cmd = (
+        ("" if is_linux_native() else "sudo ")
+        + res.stdout.strip()
+    )
     shell(cmd)
 
 
@@ -39,12 +54,12 @@ def shutdown():
     print(">> Finished LoadBalancer!")
     print("\n>> Finishing KinD and Registry...")
     shell("kind delete cluster")
-    shell("docker rm -f kind-registry")
+    shell(f"{get_container_runtime()} rm -f kind-registry")
     print(">> Finished KinD and Registry!")
 
 
 def main():
-    if linux_in_wsl2():
+    if not is_linux_native():
         res = shell("sudo printf ''")
         if res.returncode == 1:
             sys.exit("\n>> Error: Permission denied! Please run as sudo.")
