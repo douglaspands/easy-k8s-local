@@ -8,8 +8,8 @@ from pathlib import Path
 
 @cache
 def is_linux_native() -> bool:
-    res = shell("uname -a", capture_output=True)
     if "LINUX" in str(sys.platform).upper():
+        res = shell("uname -a", capture_output=True)
         if "MICROSOFT" in res.stdout.upper():
             return False
         return True
