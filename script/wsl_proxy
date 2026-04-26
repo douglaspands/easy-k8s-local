@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+import argparse
+import asyncio
+import sys
+
+
+class ProxyServer:
+    def __init__(
+        self, local_host: str, local_port: int, target_ip: str, target_port: int
+    ):
+        self.local_host = local_host
+        self.local_port = local_port
+        self.target_ip = target_ip
+        self.target_port = target_port
+
+    async def _proxy_data(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ):
+        try:
+            target_reader, target_writer = await asyncio.open_connection(
+                host=self.target_ip, port=self.target_port
+            )
+        except Exception as e:
+            print(
+                f"[!] Error connecting to target {self.target_ip}:{self.target_port} - {e}"
+            )
+            writer.close()
+            await writer.wait_closed()
+            raise e
+
+        await asyncio.gather(
+            self._pipe(reader, target_writer), self._pipe(target_reader, writer)
+        )
+
+    async def _pipe(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        try:
+            while not reader.at_eof():
+                data = await reader.read(4096)
+                if not data:
+                    break
+                writer.write(data)
+                await writer.drain()
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    async def start_server(self):
+        server = await asyncio.start_server(
+            self._proxy_data, self.local_host, self.local_port
+        )
+
+        print(f"[*] Proxy Local:  http://{self.local_host}:{self.local_port}")
+        print(f"[*] Forwarding to: http://{self.target_ip}:{self.target_port}")
+        print("[*] Press Ctrl+C to stop.")
+
+        async with server:
+            await server.serve_forever()
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Lightweight TCP proxy for development (WSL2/KinD)."
+    )
+
+    parser.add_argument(
+        "--host", default="0.0.0.0", help="Local host for the proxy (default: 0.0.0.0)"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8080,
+        help="Local port for the proxy (default: 8080)",
+    )
+    parser.add_argument(
+        "--target-ip",
+        default="172.18.0.4",
+        help="Target IP of the KinD (default: 172.18.0.4)",
+    )
+    parser.add_argument(
+        "--target-port",
+        type=int,
+        default=80,
+        help="Target port of the KinD (default: 80)",
+    )
+
+    args = parser.parse_args()
+    proxy = ProxyServer(args.host, args.port, args.target_ip, args.target_port)
+    try:
+        print("[*] Starting proxy server...")
+        asyncio.run(proxy.start_server())
+    except KeyboardInterrupt:
+        print("\n[!] Proxy stopped by user.")
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
