@@ -81,6 +81,8 @@ Pressione `Ctrl+C` para cancelar o script e encerrar o load balancer, o cluster 
 
 > Usando o `Podman`, o `registry-local` só funcion corretamente se [desativar a conexão segura (HTTPS)](#podman--localregistry-desativar-conexão-segura).
 
+> Se o **KinD** estiver sendo utilizado via **WSL2**, é necessario executar o script de [proxy](#2-wsl-proxy).
+
 ### 1. Passo - Iniciar o Cluster junto com o Local Registry
 ```sh
 ./script/kind-with-registry.sh
@@ -126,6 +128,8 @@ cloud-provider-kind
 > Binario prende o terminal.
 
 Feito isso, o `KinD` vai garantir a exposição correta do IP e da porta ao executar manifesto de `ingress` da aplicação.
+
+> Se o **KinD** estiver sendo utilizado via **WSL2**, é necessario executar o script de [proxy](#2-wsl-proxy).
 
 ## Teste
 Apos iniciar o cluster do k8s, iniciar a aplicação de teste com o seguinte comando:
@@ -173,3 +177,40 @@ Criar/Editar o arquivo de configuração `~/.config/containers/registries.conf` 
 location = "localhost:5001"
 insecure = true
 ```
+
+### WSL2 Proxy
+O WSL2 não consegue sincronizar todos os IPs gerados pelo Docker/Podman com o Windows. Para resolver isso, foi criado um script em Python para fazer uma ponte entre os 2, mas precisa ser efetuado os seguintes passos:
+
+#### 1. Verificar IP do Cluster
+```sh
+kubectl get ingress -A
+```
+
+O output de exemplo:
+```
+NAMESPACE   NAME          CLASS                 HOSTS   ADDRESS                            PORTS   AGE
+default     bar-ingress   cloud-provider-kind   *       172.18.0.4,fc00:f853:ccd:e793::4   80      6s
+default     foo-ingress   cloud-provider-kind   *       172.18.0.4,fc00:f853:ccd:e793::4   80      6s
+```
+Identificamos que o IP do Ingress é o `172.18.0.4`.
+
+#### 2. WSL Proxy
+Executar o comando:
+```sh
+./script/wsl_proxy --host '0.0.0.0' --port 8080 --target-ip '172.18.0.4' --target-port 80
+```
+O que significa cada argumento:
+- `--host`: Host que usaremos para acessar o KinD
+- `--port`: Porta que usaremos para acessar o KinD
+- `--target-ip`: IP do Ingress
+- `--target-port`: Porta do Ingress
+
+O output:
+```txt
+[*] Starting proxy server...
+[*] Proxy Local:  http://0.0.0.0:8080
+[*] Forwarding to: http://172.18.0.4:80
+[*] Press Ctrl+C to stop.
+``` 
+
+O servidor estará disponivel na rota [http://localhost:8080](http://localhost:8080).

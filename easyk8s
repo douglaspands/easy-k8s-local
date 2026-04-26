@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import subprocess
 import sys
@@ -43,10 +43,7 @@ def startup():
     cmd = "kubectl label node kind-control-plane node.kubernetes.io/exclude-from-external-load-balancers-"
     shell(cmd)
     res = shell("which cloud-provider-kind", capture_output=True)
-    cmd = (
-        ("" if is_linux_native() else "sudo ")
-        + res.stdout.strip()
-    )
+    cmd = res.stdout.strip()
     shell(cmd)
 
 
@@ -59,11 +56,6 @@ def shutdown():
 
 
 def main():
-    if not is_linux_native():
-        res = shell("sudo printf ''")
-        if res.returncode == 1:
-            sys.exit("\n>> Error: Permission denied! Please run as sudo.")
-
     print("# STARTING LOCAL KUBERNETES")
     try:
         startup()
